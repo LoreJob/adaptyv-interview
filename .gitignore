@@ -1,0 +1,18 @@
+.venv/
+.env
+__pycache__/
+*.pyc
+.DS_Store
+.ipynb_checkpoints/
+.pytest_cache/
+frontend/node_modules/
+frontend/dist/
+
+# heavy raw assays (kinetics PNGs) — app runs off data/processed/*.parquet
+data/raw/
+# large mmseqs sequence DB, not needed to run
+reference/egfr_competition_1-main/databases/paper
+
+# local tooling / editor state, not part of the project
+.claude/
+data/skills/
