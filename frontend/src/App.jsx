@@ -78,6 +78,44 @@ function Gate({ onSubmit }) {
   );
 }
 
+// --- tiny, escape-safe markdown renderer for the agent reply ---
+function escapeHtml(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function inlineMd(s) {
+  return escapeHtml(s)
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/`([^`]+?)`/g, "<code>$1</code>")
+    .replace(/(^|[^*])\*(?!\s)([^*]+?)\*(?!\*)/g, "$1<em>$2</em>");
+}
+function renderMarkdown(md) {
+  const lines = String(md).split("\n");
+  let html = "";
+  let inList = false;
+  const closeList = () => { if (inList) { html += "</ul>"; inList = false; } };
+  for (const raw of lines) {
+    const line = raw.trimEnd();
+    if (!line.trim()) { closeList(); continue; }
+    if (/^-{3,}$/.test(line.trim())) { closeList(); html += "<hr/>"; continue; }
+    let m;
+    if ((m = line.match(/^(#{1,6})\s+(.*)$/))) {
+      closeList();
+      const tag = m[1].length <= 1 ? "h2" : "h3";
+      html += `<${tag}>${inlineMd(m[2])}</${tag}>`;
+      continue;
+    }
+    if ((m = line.match(/^\s*[-*]\s+(.*)$/))) {
+      if (!inList) { html += "<ul>"; inList = true; }
+      html += `<li>${inlineMd(m[1])}</li>`;
+      continue;
+    }
+    closeList();
+    html += `<p>${inlineMd(line)}</p>`;
+  }
+  closeList();
+  return html;
+}
+
 function badgeClass(v) {
   const s = String(v).toLowerCase();
   if (["strong", "high"].includes(s)) return "badge badge--good";
@@ -381,7 +419,9 @@ export default function App() {
               {thinking && <span className="spinner">calling tools…</span>}
             </div>
           </div>
-          {reply && <div className="reply">{reply}</div>}
+          {reply && (
+            <div className="reply" dangerouslySetInnerHTML={{ __html: renderMarkdown(reply) }} />
+          )}
         </div>
       </section>
 
