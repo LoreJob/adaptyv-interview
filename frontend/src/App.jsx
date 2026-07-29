@@ -88,6 +88,10 @@ function inlineMd(s) {
     .replace(/`([^`]+?)`/g, "<code>$1</code>")
     .replace(/(^|[^*])\*(?!\s)([^*]+?)\*(?!\*)/g, "$1<em>$2</em>");
 }
+// Replace long raw amino-acid runs in agent text with their short design name.
+function namifySequences(text) {
+  return String(text).replace(/[ACDEFGHIKLMNPQRSTVWY]{20,}/g, (m) => seqName(m));
+}
 function renderMarkdown(md) {
   const lines = String(md).split("\n");
   let html = "";
@@ -114,6 +118,13 @@ function renderMarkdown(md) {
   }
   closeList();
   return html;
+}
+
+// Stable short name derived from the sequence (same sequence -> same name).
+function seqName(seq) {
+  let h = 0;
+  for (let i = 0; i < seq.length; i++) h = (h * 31 + seq.charCodeAt(i)) >>> 0;
+  return "binder_" + h.toString(16).padStart(8, "0").slice(0, 4);
 }
 
 function badgeClass(v) {
@@ -374,13 +385,13 @@ export default function App() {
           {ranked && (
             <div className="rank">
               <div className="rank__head">
-                <div>#</div><div>Sequence</div><div>P(bind)</div>
+                <div>#</div><div>Design</div><div>P(bind)</div>
                 <div className="rank__col--p50">Uncert.</div><div>Selected</div>
               </div>
               {ranked.map((r, i) => (
                 <div key={i} className={"rank__row" + (r.selected ? " is-selected" : "")}>
                   <div className="rank__idx mono">{String(i + 1).padStart(2, "0")}</div>
-                  <div className="rank__seq">{r.sequence}</div>
+                  <div className="rank__seq" title={r.sequence}>{seqName(r.sequence)}</div>
                   <div className="rank__num">{(r.binder_probability * 100).toFixed(0)}%</div>
                   <div className="rank__col--p50 mono" style={{ color: "var(--ink-soft)" }}>
                     ±{(r.binder_probability_std * 100).toFixed(0)}
@@ -420,7 +431,7 @@ export default function App() {
             </div>
           </div>
           {reply && (
-            <div className="reply" dangerouslySetInnerHTML={{ __html: renderMarkdown(reply) }} />
+            <div className="reply" dangerouslySetInnerHTML={{ __html: renderMarkdown(namifySequences(reply)) }} />
           )}
         </div>
       </section>
