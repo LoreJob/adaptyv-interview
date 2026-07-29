@@ -58,6 +58,19 @@ is illustrative. Reporting uses Spearman, not R², given the small, outlier-pron
 
 ## Quickstart
 
+**Prerequisites:** Python 3.11+ and Node 18+ (`python3 --version`, `node --version`).
+
+### One command
+
+```bash
+./run.sh
+```
+
+Creates the virtualenv, installs both halves, and starts backend + frontend.
+Then open **http://localhost:5173**. Stop with Ctrl-C.
+
+### Or manually (two terminals)
+
 ```bash
 # 1. Environment
 python3 -m venv .venv

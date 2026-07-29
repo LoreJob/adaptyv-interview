@@ -19,13 +19,10 @@ async function postJSON(url, body) {
   return r.json();
 }
 
-function AdaptyvLogo({ height = 26 }) {
+function AdaptyvLogo({ height = 28 }) {
   return (
     <span className="brand" aria-label="Adaptyv">
-      <svg className="brand__mark" style={{ height, width: height }} viewBox="0 0 32 32" fill="none" role="img" aria-hidden="true">
-        <path d="M16 2.4 27.6 9v14L16 29.6 4.4 23V9L16 2.4Z" fill="none" stroke="#17293b" strokeWidth="2.1" strokeLinejoin="round"/>
-        <path d="M11 20.5c0-4 2.6-7 6-7 2.2 0 3.8 1.4 3.8 3.4 0 2.2-1.8 3.6-4 3.6-2.5 0-4.2-1.7-4.2-4.2 0-3 2.3-5.3 5.4-5.3" fill="none" stroke="#5bb2ef" strokeWidth="2.1" strokeLinecap="round"/>
-      </svg>
+      <img className="brand__mark" style={{ height, width: height }} src="/adaptyv-logo.png" alt="Adaptyv" />
       <span className="brand__word">Adaptyv</span>
     </span>
   );
