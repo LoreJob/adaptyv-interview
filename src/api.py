@@ -18,7 +18,7 @@ if __package__ in (None, ""):  # allow `python src/api.py`
     sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -144,16 +144,18 @@ def rank(req: RankRequest) -> dict:
 
 
 @app.get("/api/agent/available")
-def agent_available() -> dict:
-    return {"available": bool(os.getenv("OPENROUTER_API_KEY"))}
+def agent_available(x_openrouter_key: str | None = Header(default=None)) -> dict:
+    # Available if the caller supplied a key (from the gate) or the server has one.
+    return {"available": bool(x_openrouter_key or os.getenv("OPENROUTER_API_KEY"))}
 
 
 @app.post("/api/agent")
-def agent(req: AgentRequest) -> dict:
-    if not os.getenv("OPENROUTER_API_KEY"):
+def agent(req: AgentRequest, x_openrouter_key: str | None = Header(default=None)) -> dict:
+    key = x_openrouter_key or os.getenv("OPENROUTER_API_KEY")
+    if not key:
         raise HTTPException(status_code=503, detail="OPENROUTER_API_KEY not set.")
     from src.agent import run_agent
     try:
-        return {"reply": run_agent(req.message)}
+        return {"reply": run_agent(req.message, api_key=key)}
     except Exception as exc:  # surface agent/model errors to the UI
         raise HTTPException(status_code=500, detail=str(exc))

@@ -85,7 +85,10 @@ cd frontend && npm install && npm run dev
 ```
 
 Open **http://localhost:5173** (the frontend proxies `/api` to the backend on `:8000`).
-The dashboard runs fully without a key; only the agent panel needs `OPENROUTER_API_KEY`.
+
+The app opens on an **access-key gate**: paste the `OPENROUTER_API_KEY` from the
+email to unlock the dashboard. The key stays in your browser session and is sent
+only to your local backend, which uses it to power the agent panel.
 
 <details>
 <summary><b>Other entry points</b></summary>

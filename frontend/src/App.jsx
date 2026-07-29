@@ -9,10 +9,10 @@ async function getJSON(url) {
   if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || r.statusText);
   return r.json();
 }
-async function postJSON(url, body) {
+async function postJSON(url, body, headers = {}) {
   const r = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...headers },
     body: JSON.stringify(body),
   });
   if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || r.statusText);
@@ -25,6 +25,56 @@ function AdaptyvLogo({ height = 28 }) {
       <img className="brand__mark" style={{ height, width: height }} src="/adaptyv-logo.png" alt="Adaptyv" />
       <span className="brand__word">Adaptyv</span>
     </span>
+  );
+}
+
+function Gate({ onSubmit }) {
+  const [key, setKey] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function submit(e) {
+    e.preventDefault();
+    const k = key.trim();
+    if (!k) { setError("Paste the API key from the email to continue."); return; }
+    setBusy(true); setError("");
+    try {
+      // Validate the key against the backend before entering.
+      const r = await fetch("/api/agent/available", { headers: { "X-OpenRouter-Key": k } });
+      const d = await r.json().catch(() => ({}));
+      if (!d.available) throw new Error("Key not accepted by the server.");
+      onSubmit(k);
+    } catch (err) {
+      setError(String(err.message || err));
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="gate">
+      <form className="gate__card" onSubmit={submit}>
+        <AdaptyvLogo height={34} />
+        <h2 className="gate__title">Enter your access key</h2>
+        <p className="gate__sub">
+          This demo is key-gated. Paste the API key provided in the email to open
+          the dashboard.
+        </p>
+        <label className="field" htmlFor="apikey">API key</label>
+        <input
+          id="apikey"
+          type="password"
+          autoFocus
+          placeholder="sk-or-…"
+          value={key}
+          onChange={(e) => setKey(e.target.value)}
+        />
+        <button className="btn btn--primary gate__btn" type="submit" disabled={busy}>
+          {busy ? "Checking…" : "Enter dashboard"}
+        </button>
+        {error && <p className="gate__err">{error}</p>}
+        <p className="gate__note">The key stays in your browser session and is sent only to your local backend.</p>
+      </form>
+    </div>
   );
 }
 
@@ -62,11 +112,14 @@ function LineChart({ tested, informed, random, total }) {
 }
 
 export default function App() {
+  const [apiKey, setApiKey] = useState(() => sessionStorage.getItem("orKey") || "");
   const [stats, setStats] = useState(null);
   const [binder, setBinder] = useState(null);
   const [metrics, setMetrics] = useState(null);
   const [bt, setBt] = useState(null);
-  const [agentOn, setAgentOn] = useState(false);
+
+  // Agent is available once a key is entered at the gate (or set server-side).
+  const agentOn = Boolean(apiKey);
 
   // rank tool
   const [seqs, setSeqs] = useState(DEFAULT_SEQS);
@@ -83,12 +136,17 @@ export default function App() {
   const [err, setErr] = useState("");
 
   useEffect(() => {
+    if (!apiKey) return;   // stay gated until a key is entered
     getJSON("/api/stats").then(setStats).catch(() => {});
     getJSON("/api/example-binder").then(setBinder).catch(() => {});
     getJSON("/api/metrics").then(setMetrics).catch(() => {});
     getJSON("/api/backtest").then(setBt).catch(() => {});
-    getJSON("/api/agent/available").then((d) => setAgentOn(d.available)).catch(() => {});
-  }, []);
+  }, [apiKey]);
+
+  function enter(k) {
+    sessionStorage.setItem("orKey", k);
+    setApiKey(k);
+  }
 
   async function runRank() {
     setRanking(true); setErr("");
@@ -105,16 +163,19 @@ export default function App() {
   async function runAgent() {
     setThinking(true); setErr(""); setReply("");
     try {
-      const d = await postJSON("/api/agent", { message: msg });
+      const d = await postJSON("/api/agent", { message: msg }, { "X-OpenRouter-Key": apiKey });
       setReply(d.reply);
     } catch (e) { setErr(String(e.message)); }
     setThinking(false);
   }
 
   const s100 = bt?.summary_at_100;
+  const gated = !apiKey;
 
   return (
     <>
+      {gated && <Gate onSubmit={enter} />}
+      <div className={gated ? "app app--gated" : "app"} aria-hidden={gated}>
       <nav className="nav">
         <AdaptyvLogo />
         <div className="nav__links">
@@ -342,6 +403,7 @@ export default function App() {
           <p className="mono">Adaptyv Foundry · EGFR · v0.1</p>
         </div>
       </footer>
+      </div>
     </>
   );
 }

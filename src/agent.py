@@ -174,16 +174,16 @@ TOOLS = [
 ]
 
 
-def _make_client() -> OpenAI:
-    key = os.getenv("OPENROUTER_API_KEY")
+def _make_client(api_key: str | None = None) -> OpenAI:
+    key = api_key or os.getenv("OPENROUTER_API_KEY")
     if not key:
         raise RuntimeError("OPENROUTER_API_KEY not set (put it in .env).")
     return OpenAI(base_url=OPENROUTER_BASE_URL, api_key=key)
 
 
-def run_agent(user_message: str, client: OpenAI | None = None) -> str:
+def run_agent(user_message: str, client: OpenAI | None = None, api_key: str | None = None) -> str:
     """Run the agent on one request; drive the tool loop; return the final text."""
-    client = client or _make_client()
+    client = client or _make_client(api_key)
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": user_message},
