@@ -9,6 +9,7 @@ Run: uvicorn src.api:app --reload --port 8000
 
 from __future__ import annotations
 
+import json
 import os
 from functools import lru_cache
 from pathlib import Path
@@ -41,10 +42,24 @@ app.add_middleware(
 )
 
 
+# --- precomputed cache ----------------------------------------------------
+# metrics/backtest train sklearn models and would spike memory/time on a small
+# host. `python -m src.build_cache` writes these results to JSON at build time;
+# when present, endpoints serve it directly (fast, low memory). Falls back to
+# live computation when the file is absent (e.g. during the build itself).
+_CACHE_PATH = Path(__file__).resolve().parent.parent / "data" / "processed" / "site_cache.json"
+try:
+    _CACHE = json.loads(_CACHE_PATH.read_text()) if _CACHE_PATH.is_file() else {}
+except Exception:
+    _CACHE = {}
+
+
 # --- cached computations --------------------------------------------------
 
 @lru_cache(maxsize=1)
 def _stats() -> dict:
+    if "stats" in _CACHE:
+        return _CACHE["stats"]
     df = load_designs()
     return {
         "designs": int(len(df)),
@@ -58,6 +73,8 @@ def _stats() -> dict:
 @lru_cache(maxsize=1)
 def _example_binder() -> dict:
     """A real strong binder from the data, for the hero data card."""
+    if "example_binder" in _CACHE:
+        return _CACHE["example_binder"]
     df = load_designs()
     strong = df[(df["binds"]) & df["kd"].notna()].sort_values("kd")
     r = strong.iloc[0]
@@ -72,6 +89,8 @@ def _example_binder() -> dict:
 
 @lru_cache(maxsize=1)
 def _metrics() -> dict:
+    if "metrics" in _CACHE:
+        return _CACHE["metrics"]
     df = load_features()
     clf = evaluate_classifier(df)
     reg = evaluate_regressor(df)
@@ -89,6 +108,8 @@ def _metrics() -> dict:
 
 @lru_cache(maxsize=1)
 def _backtest() -> dict:
+    if "backtest" in _CACHE:
+        return _CACHE["backtest"]
     res = run_backtest()
     s = res.summary_at(100)
     return {

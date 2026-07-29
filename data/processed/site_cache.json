@@ -1,0 +1,105 @@
+{
+  "stats": {
+    "designs": 604,
+    "binders": 63,
+    "kd_labeled": 63,
+    "rounds": 2,
+    "strengths": {
+      "none": 541,
+      "medium": 29,
+      "weak": 28,
+      "strong": 6
+    }
+  },
+  "example_binder": {
+    "id": "round1zeroshot.K5Q_N70S_",
+    "kd_nM": 1.21,
+    "binding_strength": "Strong",
+    "expression": "High",
+    "round": 2
+  },
+  "metrics": {
+    "roc_auc": 0.862,
+    "avg_precision": 0.574,
+    "precision_at_20": 0.85,
+    "precision_at_50": 0.62,
+    "spearman": 0.404,
+    "kd_n": 63,
+    "n": 604,
+    "n_pos": 63
+  },
+  "backtest": {
+    "tested": [
+      20,
+      30,
+      40,
+      50,
+      60,
+      70,
+      80,
+      90,
+      100,
+      110,
+      120,
+      130,
+      140,
+      150,
+      160,
+      170,
+      180,
+      190,
+      200
+    ],
+    "informed": [
+      1.8,
+      5.0,
+      8.0,
+      11.0,
+      13.6,
+      14.6,
+      17.8,
+      22.2,
+      24.0,
+      24.8,
+      26.0,
+      27.2,
+      27.8,
+      29.0,
+      31.8,
+      34.0,
+      36.2,
+      40.2,
+      42.4
+    ],
+    "random": [
+      1.8,
+      2.8,
+      3.2,
+      4.8,
+      5.8,
+      6.6,
+      7.8,
+      9.8,
+      10.8,
+      12.0,
+      13.4,
+      14.0,
+      14.4,
+      15.6,
+      17.0,
+      17.8,
+      19.0,
+      19.6,
+      19.8
+    ],
+    "total_hits": 63,
+    "summary_at_100": {
+      "budget": 100,
+      "informed_found": 24.0,
+      "random_found": 10.8,
+      "informed_recall": 0.381,
+      "random_recall": 0.171,
+      "lift": 2.222
+    }
+  }
+}

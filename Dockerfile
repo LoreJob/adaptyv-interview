@@ -21,6 +21,10 @@ COPY reference/ ./reference/
 # built frontend from stage 1
 COPY --from=frontend /fe/dist ./frontend/dist
 
+# precompute heavy endpoints (metrics/backtest) so the server never trains at
+# request time -> fast, low memory on small hosts.
+RUN python -m src.build_cache
+
 ENV PORT=8000
 EXPOSE 8000
 # Render provides $PORT; default to 8000 locally.
