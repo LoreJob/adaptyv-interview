@@ -11,15 +11,17 @@ from __future__ import annotations
 
 import os
 from functools import lru_cache
+from pathlib import Path
 
 if __package__ in (None, ""):  # allow `python src/api.py`
-    import pathlib
     import sys
-    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from src import mock_api
@@ -159,3 +161,24 @@ def agent(req: AgentRequest, x_openrouter_key: str | None = Header(default=None)
         return {"reply": run_agent(req.message, api_key=key)}
     except Exception as exc:  # surface agent/model errors to the UI
         raise HTTPException(status_code=500, detail=str(exc))
+
+
+# --- serve the built React frontend (single-service deploy) ----------------
+# In production the Docker image builds frontend/dist; FastAPI serves it so the
+# whole app lives on one origin (no CORS, no separate frontend host).
+FRONTEND_DIST = Path(__file__).resolve().parent.parent / "frontend" / "dist"
+
+if FRONTEND_DIST.is_dir():
+    app.mount("/assets", StaticFiles(directory=FRONTEND_DIST / "assets"), name="assets")
+
+    @app.get("/")
+    def _index() -> FileResponse:
+        return FileResponse(FRONTEND_DIST / "index.html")
+
+    @app.get("/{path:path}")
+    def _spa(path: str) -> FileResponse:
+        # Serve a real static file if it exists (favicon, logo), else the SPA shell.
+        candidate = FRONTEND_DIST / path
+        if candidate.is_file():
+            return FileResponse(candidate)
+        return FileResponse(FRONTEND_DIST / "index.html")

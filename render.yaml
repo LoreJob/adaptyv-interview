@@ -1,0 +1,15 @@
+# Render blueprint: one Docker web service that serves API + built frontend.
+# Deploy: Render dashboard -> New -> Blueprint -> pick this repo.
+services:
+  - type: web
+    name: adaptyv-foundry
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/stats
+    envVars:
+      # Optional. The app's access-key gate supplies a key per request, so this
+      # is only a server-side fallback. Set it in the dashboard if you want the
+      # agent to work without pasting a key. Left unset here (sync: false).
+      - key: OPENROUTER_API_KEY
+        sync: false
