@@ -23,7 +23,7 @@ function AdaptyvLogo({ height = 28 }) {
   return (
     <span className="brand" aria-label="Adaptyv">
       <img className="brand__mark" style={{ height, width: height }} src="/adaptyv-logo.png" alt="Adaptyv" />
-      <span className="brand__word">Adaptyv</span>
+      <span className="brand__word">Adaptyv <span className="brand__sub">Advisor</span></span>
     </span>
   );
 }
@@ -451,7 +451,7 @@ export default function App() {
             ODbL. The API schema and simulated lab results are a hypothesis, not
             Adaptyv's real system. POC, model is illustrative, not production.
           </p>
-          <p className="mono">Adaptyv Foundry · EGFR · v0.1</p>
+          <p className="mono">Adaptyv Advisor · EGFR · v0.1</p>
         </div>
       </footer>
       </div>

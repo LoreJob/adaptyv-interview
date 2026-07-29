@@ -54,7 +54,7 @@ def _backtest() -> pd.DataFrame:
     }).set_index("designs tested")
 
 
-st.title("🧬 Adaptyv Foundry")
+st.title("🧬 Adaptyv Advisor")
 st.caption(
     "Active-learning + agent layer over Adaptyv Bio's public EGFR competition data. "
     "POC, model and API schema are illustrative, not production."

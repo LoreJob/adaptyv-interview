@@ -169,7 +169,7 @@ def get_results(batch_id: str) -> ResultsResponse:
 # --- FastAPI app ----------------------------------------------------------
 
 app = FastAPI(
-    title="Adaptyv Foundry, Mock API",
+    title="Adaptyv Advisor, Mock API",
     description="HYPOTHETICAL design-submission API. Not Adaptyv's real schema.",
     version="0.1.0",
 )

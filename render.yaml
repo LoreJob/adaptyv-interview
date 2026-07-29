@@ -2,7 +2,7 @@
 # Deploy: Render dashboard -> New -> Blueprint -> pick this repo.
 services:
   - type: web
-    name: adaptyv-foundry
+    name: adaptyv-advisor
     runtime: docker
     plan: free
     dockerfilePath: ./Dockerfile

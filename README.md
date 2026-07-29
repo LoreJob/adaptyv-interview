@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🧬 Adaptyv Foundry
+# 🧬 Adaptyv Advisor
 
 ### Test fewer designs. Find more binders.
 
